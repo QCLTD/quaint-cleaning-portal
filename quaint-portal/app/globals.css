@@ -1,0 +1,7 @@
+:root { --border:#e5e7eb; --muted:#6b7280; --brand:#059669; }
+*{ box-sizing: border-box; } table{ width:100%; border-collapse:collapse;}
+th,td{ padding:10px; border-bottom:1px solid var(--border); text-align:left; font-size:14px;}
+h1{ font-size:22px; margin:18px 0;} button{ border:1px solid var(--border); background:white; padding:8px 12px; border-radius:8px; cursor:pointer;}
+button.primary{ background:var(--brand); color:white; border-color:var(--brand);} .badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#f3f4f6; border:1px solid var(--border);}
+.badge.green{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46;} .badge.red{ background:#fef2f2; border-color:#fecaca; color:#7f1d1d;}
+.badge.yellow{ background:#fffbeb; border-color:#fde68a; color:#92400e;} .controls{ display:flex; gap:8px;}

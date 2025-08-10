@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum QuoteStatus { PENDING APPROVED DECLINED }
+enum ApprovalAction { APPROVE DECLINE }
+model Organisation {
+  id           Int          @id @default(autoincrement())
+  name         String
+  billingEmail String?
+  logoUrl      String?
+  status       String       @default("ACTIVE")
+  properties   Property[]
+  users        User[]
+  quotes       Quote[]
+  approvals    Approval[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+model Property {
+  id              Int           @id @default(autoincrement())
+  organisationId  Int
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  name            String
+  address         String?
+  notes           String?
+  quotes          Quote[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+model User {
+  id              Int           @id @default(autoincrement())
+  organisationId  Int
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  email           String        @unique
+  name            String
+  role            String        @default("MANAGER")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  approvals       Approval[]
+  auditLogs       AuditLog[]
+}
+model Quote {
+  id              Int           @id @default(autoincrement())
+  organisationId  Int
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  propertyId      Int
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  number          String        @unique
+  description     String
+  currency        String        @default("GBP")
+  subtotal        Decimal       @db.Decimal(10,2)
+  vat             Decimal       @db.Decimal(10,2)
+  total           Decimal       @db.Decimal(10,2)
+  createdAt       DateTime      @default(now())
+  expiresAt       DateTime?
+  status          QuoteStatus   @default(PENDING)
+  items           QuoteItem[]
+  approvals       Approval[]
+}
+model QuoteItem {
+  id        Int     @id @default(autoincrement())
+  quoteId   Int
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  name      String
+  qty       Int     @default(1)
+  unitPrice Decimal @db.Decimal(10,2)
+  lineTotal Decimal @db.Decimal(10,2)
+}
+model Approval {
+  id             Int            @id @default(autoincrement())
+  organisationId Int
+  organisation   Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  quoteId        Int
+  quote          Quote          @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  action         ApprovalAction
+  comment        String?
+  actorId        Int
+  actor          User           @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  actedAt        DateTime       @default(now())
+  ip             String?
+}
+model AuditLog {
+  id             Int           @id @default(autoincrement())
+  organisationId Int
+  organisation   Organisation  @relation(fields: [organisationId], references: [id])
+  actorId        Int?
+  actor          User?         @relation(fields: [actorId], references: [id])
+  event          String
+  targetType     String
+  targetId       Int?
+  meta           Json?
+  createdAt      DateTime       @default(now())
+  ip             String?
+}
